@@ -1,38 +1,24 @@
-import os
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.datasets import load_iris
 import streamlit as st
 import pandas as pd
 import numpy as np
-
-base_dir = os.path.dirname(os.path.abspath(__file__))
-
-def get_file_path(folder, filename):
-    return os.path.join(base_dir, folder, filename)
+import matplotlib.pyplot as plt
 
 st.header("โปรเจคการจำแนกข้อมูลดอกไม้")
-
+#st.image("./img/kairung022.jpg")
 col1, col2, col3 = st.columns(3)
 
-# ลิงก์รูปภาพสำรองกรณีไม่มีไฟล์ในเครื่อง/GitHub
-url_versicolor = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Iris_versicolor_3.jpg/320px-Iris_versicolor_3.jpg"
-url_virginica = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Iris_virginica.jpg/320px-Iris_virginica.jpg"
-url_setosa = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Kosaciec_szczecinkowaty_Iris_setosa.jpg/320px-Kosaciec_szczecinkowaty_Iris_setosa.jpg"
-
 with col1:
-    st.header("Versicolor")
-    img1 = get_file_path("img", "iris1.jpg")
-    st.image(img1 if os.path.exists(img1) else url_versicolor)
+   st.header("Versicolor")
+   st.image("./img/iris1.jpg")
 
 with col2:
-    st.header("Virginica")
-    img2 = get_file_path("img", "iris2.jpg")
-    st.image(img2 if os.path.exists(img2) else url_virginica)
+   st.header("Verginiga")
+   st.image("./img/iris2.jpg")
 
 with col3:
-    st.header("Setosa")
-    img3 = get_file_path("img", "iris3.jpg")
-    st.image(img3 if os.path.exists(img3) else url_setosa)
+   st.header("Setosa")
+   st.image("./img/iris3.jpg")
 
 html_7 = """
 <div style="background-color:#EC7063;padding:15px;border-radius:15px 15px 15px 15px;border-style:'solid';border-color:black">
@@ -41,17 +27,7 @@ html_7 = """
 """
 st.markdown(html_7, unsafe_allow_html=True)
 st.markdown("")
-
-# โหลดไฟล์ CSV (ถ้าหาไฟล์ในโฟลเดอร์ data ไม่เจอ จะดึงข้อมูล Iris มาตรฐานจาก scikit-learn มาใช้แทนอัตโนมัติ)
-csv_path = get_file_path("data", "iris.csv")
-if os.path.exists(csv_path):
-    dt = pd.read_csv(csv_path)
-else:
-    iris = load_iris()
-    dt = pd.DataFrame(iris.data, columns=['sepallength', 'sepalwidth', 'petallength', 'petalwidth'])
-    # แปลงชื่อสายพันธุ์ให้เป็นตัวพิมพ์ใหญ่ตัวแรกตรงกับโค้ดเดิม
-    dt['variety'] = [iris.target_names[i].capitalize() for i in iris.target]
-
+dt = pd.read_csv("./data/iris.csv")
 st.write(dt.head(10))
 
 dt1 = dt['petallength'].sum()
@@ -60,10 +36,12 @@ dt3 = dt['sepallength'].sum()
 dt4 = dt['sepalwidth'].sum()
 
 dx = [dt1, dt2, dt3, dt4]
-dx2 = pd.DataFrame(dx, index=["petallength", "petalwidth", "sepallength", "sepalwidth"], columns=["Total"])
+dx2 = pd.DataFrame(dx, index=["d1", "d2", "d3", "d4"])
 
 if st.button("แสดงการจินตทัศน์ข้อมูล"):
-    st.bar_chart(dx2)
+   #st.write(dt.head(10))
+   st.bar_chart(dx2)
+   st.button("ไม่แสดงข้อมูล")
 else:
     st.write("ไม่แสดงข้อมูล")
 
@@ -75,33 +53,32 @@ html_8 = """
 st.markdown(html_8, unsafe_allow_html=True)
 st.markdown("")
 
-pt_len = st.slider("กรุณาเลือกข้อมูล petal.length", min_value=0.0, max_value=10.0, value=1.5, step=0.1)
-pt_wd = st.slider("กรุณาเลือกข้อมูล petal.width", min_value=0.0, max_value=10.0, value=0.2, step=0.1)
 
-sp_len = st.number_input("กรุณาเลือกข้อมูล sepal.length", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
-sp_wd = st.number_input("กรุณาเลือกข้อมูล sepal.width", min_value=0.0, max_value=10.0, value=3.5, step=0.1)
+pt_len = st.slider("กรุณาเลือกข้อมูล petal.length")
+pt_wd = st.slider("กรุณาเลือกข้อมูล petal.width")
+
+sp_len = st.number_input("กรุณาเลือกข้อมูล sepal.length")
+sp_wd = st.number_input("กรุณาเลือกข้อมูล sepal.width")
 
 if st.button("ทำนายผล"):
-    feature_cols = ['petallength', 'petalwidth', 'sepallength', 'sepalwidth']
-    X = dt[feature_cols]
-    y = dt['variety']
-    
-    Knn_model = KNeighborsClassifier(n_neighbors=3)
-    Knn_model.fit(X, y)
+   #st.write("ทำนาย")
+   #dt = pd.read_csv("./data/iris.csv") 
 
-    x_input = pd.DataFrame([[pt_len, pt_wd, sp_len, sp_wd]], columns=feature_cols)
+   X = dt.drop('variety', axis=1)
+   y = dt.variety   
+   Knn_model = KNeighborsClassifier(n_neighbors=3)
+   Knn_model.fit(X, y)  
 
-    out = Knn_model.predict(x_input)
-    st.success(f"ผลการทำนายคือ: **{out[0]}**")
+   x_input = np.array([[pt_len, pt_wd, sp_len, sp_wd]]) #ข้อมูลใหม่สำหรับทำนาย
 
-    if out[0] == 'Versicolor':
-        img_out = get_file_path("img", "iris1.jpg")
-        st.image(img_out if os.path.exists(img_out) else url_versicolor)
-    elif out[0] == 'Virginica':
-        img_out = get_file_path("img", "iris2.jpg")
-        st.image(img_out if os.path.exists(img_out) else url_virginica)
-    else: # Setosa
-        img_out = get_file_path("img", "iris3.jpg")
-        st.image(img_out if os.path.exists(img_out) else url_setosa)
+   st.write(Knn_model.predict(x_input))   
+   out=Knn_model.predict(x_input)
+
+   if out[0] == 'Setosa':
+    st.image("./img/iris1.jpg")
+   elif out[0] == 'Versicolor':       
+    st.image("./img/iris2.jpg")
+   else:
+    st.image("./img/iris3.jpg")
 else:
     st.write("ไม่ทำนาย")
