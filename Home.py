@@ -1,4 +1,5 @@
 import os
+import base64
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -18,6 +19,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# ฟังก์ชันช่วยแปลงรูปภาพเป็น Base64 เพื่อล็อกขนาดและใส่กรอบ CSS สุดเท่
+def get_base64_image(image_path):
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return None
 
 # ==========================================
 # 2. GOD-TIER HOLOGRAPHIC & SCI-FI HUD CSS
@@ -182,20 +190,57 @@ st.markdown("""
         box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
     }
 
-    /* การ์ดผลลัพธ์ระดับ Hyper-Core */
+    /* การ์ดผลลัพธ์ระดับ Hyper-Core (จัดวางรูปภาพคู่ข้อความแบบล็อกขนาด) */
     .omega-danger-box {
         background: radial-gradient(circle at top right, rgba(225, 29, 72, 0.32), rgba(10, 15, 30, 0.95));
         border: 2px solid #FB7185;
         box-shadow: 0 0 45px rgba(244, 63, 94, 0.35), inset 0 0 30px rgba(244, 63, 94, 0.15);
         border-radius: 24px;
-        padding: 28px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        min-height: 290px;
     }
     .omega-safe-box {
         background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.32), rgba(10, 15, 30, 0.95));
         border: 2px solid #34D399;
         box-shadow: 0 0 45px rgba(16, 185, 129, 0.35), inset 0 0 30px rgba(16, 185, 129, 0.15);
         border-radius: 24px;
-        padding: 28px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        min-height: 290px;
+    }
+
+    /* กรอบรูปภาพแบบล็อกขนาดคงที่ 230x230px มองเห็นชัดเจนไม่ล้นจอ */
+    .locked-img-frame-danger {
+        flex-shrink: 0;
+        width: 230px;
+        height: 230px;
+        border-radius: 18px;
+        border: 2px solid #FB7185;
+        box-shadow: 0 0 25px rgba(251, 113, 133, 0.45);
+        overflow: hidden;
+        background: #0F172A;
+    }
+    .locked-img-frame-safe {
+        flex-shrink: 0;
+        width: 230px;
+        height: 230px;
+        border-radius: 18px;
+        border: 2px solid #34D399;
+        box-shadow: 0 0 25px rgba(52, 211, 153, 0.45);
+        overflow: hidden;
+        background: #0F172A;
+    }
+    .locked-img-frame-danger img, .locked-img-frame-safe img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
     }
 
     /* ปุ่มสั่งการ Quantum Overdrive */
@@ -389,7 +434,7 @@ with tab1:
         submitted = st.form_submit_button("⚡ เริ่มการสแกนควอนตัมและสร้างแบบจำลอง 3 มิติ")
 
     # ==========================================
-    # แสดงผลลัพธ์สุดอลังการ (Gauge + Radar + 3D Space)
+    # แสดงผลลัพธ์สุดอลังการ (ล็อกขนาดรูปภาพ + ผลวินิจฉัย + Gauge)
     # ==========================================
     if submitted:
         x_input = pd.DataFrame(
@@ -405,50 +450,55 @@ with tab1:
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # แถวที่ 1: ผลวินิจฉัย + หน้าปัด Gauge วัดความเสี่ยง
-        top_c1, top_c2 = st.columns([1.4, 1], gap="large")
+        # แถวที่ 1: การ์ดผลวินิจฉัยพร้อมรูปภาพล็อกขนาด 230x230px + หน้าปัด Gauge
+        top_c1, top_c2 = st.columns([1.65, 1], gap="large")
         
         with top_c1:
             if prediction == 1:
+                img_b64 = get_base64_image("./img/yes.jpg")
+                img_html = f'<div class="locked-img-frame-danger"><img src="data:image/jpeg;base64,{img_b64}" alt="High Risk"></div>' if img_b64 else '<div class="locked-img-frame-danger" style="display:flex;align-items:center;justify-content:center;font-size:80px;">🚨</div>'
+                
                 st.markdown(f"""
                 <div class="omega-danger-box">
-                    <div class="orbitron" style="color:#FB7185; font-size:13px; letter-spacing:2px;">🚨 CRITICAL BIOMETRIC ALERT // CLASS 1</div>
-                    <h2 style="color:#FDA4AF !important; margin:10px 0;">ตรวจพบความเสี่ยงเป็นโรคหัวใจ</h2>
-                    <p style="font-size:16px; color:#E2E8F0;">
-                        โมเดล KNN (K={k_val}) ประเมินว่าคุณมีแนวโน้มความเสี่ยงอยู่ที่ <b style="color:#FB7185; font-size:22px;">{risk_percent:.1f}%</b>
-                    </p>
-                    <p style="font-size:14px; color:#CBD5E1; line-height:1.6;">
-                        <b>คำแนะนำ:</b> ค่าพารามิเตอร์ของคุณอยู่ในโซนใกล้เคียงกับกลุ่มผู้ป่วยโรคหัวใจในอวกาศข้อมูล ควรปรึกษาแพทย์เฉพาะทางโรคหัวใจเพื่อตรวจคลื่นไฟฟ้าหัวใจอย่างละเอียด
-                    </p>
+                    {img_html}
+                    <div>
+                        <div class="orbitron" style="color:#FB7185; font-size:12px; letter-spacing:2px;">🚨 CRITICAL BIOMETRIC ALERT // CLASS 1</div>
+                        <h2 style="color:#FDA4AF !important; margin:8px 0;">ตรวจพบความเสี่ยงเป็นโรคหัวใจ</h2>
+                        <p style="font-size:16px; color:#E2E8F0; margin-bottom:10px;">
+                            โมเดล KNN (K={k_val}) ประเมินแนวโน้มความเสี่ยงอยู่ที่ <b style="color:#FB7185; font-size:24px;">{risk_percent:.1f}%</b>
+                        </p>
+                        <p style="font-size:13.5px; color:#CBD5E1; line-height:1.55; margin:0;">
+                            <b>คำแนะนำ:</b> ค่าพารามิเตอร์ของคุณอยู่ในโซนใกล้เคียงกับกลุ่มผู้ป่วยโรคหัวใจในฐานข้อมูล ควรปรึกษาแพทย์เฉพาะทางโรคหัวใจเพื่อตรวจคลื่นไฟฟ้าหัวใจอย่างละเอียด
+                        </p>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
-                if os.path.exists("./img/yes.jpg"):
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.image("./img/yes.jpg", use_container_width=True)
             else:
+                img_b64 = get_base64_image("./img/no.jpg")
+                img_html = f'<div class="locked-img-frame-safe"><img src="data:image/jpeg;base64,{img_b64}" alt="Low Risk"></div>' if img_b64 else '<div class="locked-img-frame-safe" style="display:flex;align-items:center;justify-content:center;font-size:80px;">🛡️</div>'
+                
                 st.markdown(f"""
                 <div class="omega-safe-box">
-                    <div class="orbitron" style="color:#34D399; font-size:13px; letter-spacing:2px;">🛡️ OPTIMAL CARDIAC SHIELD // CLASS 0</div>
-                    <h2 style="color:#6EE7B7 !important; margin:10px 0;">ไม่พบความเสี่ยงโรคหัวใจ (เกณฑ์ปกติ)</h2>
-                    <p style="font-size:16px; color:#E2E8F0;">
-                        โมเดล KNN (K={k_val}) ประเมินดัชนีความปลอดภัยสุขภาพหัวใจอยู่ที่ <b style="color:#34D399; font-size:22px;">{safe_percent:.1f}%</b>
-                    </p>
-                    <p style="font-size:14px; color:#CBD5E1; line-height:1.6;">
-                        <b>คำแนะนำ:</b> ค่าพารามิเตอร์ของคุณอยู่ในโซนสุขภาพดี แนะนำให้ออกกำลังกายสม่ำเสมอ ควบคุมระดับคอเลสเตอรอลและความดันโลหิตให้คงที่
-                    </p>
+                    {img_html}
+                    <div>
+                        <div class="orbitron" style="color:#34D399; font-size:12px; letter-spacing:2px;">🛡️ OPTIMAL CARDIAC SHIELD // CLASS 0</div>
+                        <h2 style="color:#6EE7B7 !important; margin:8px 0;">ไม่พบความเสี่ยงโรคหัวใจ (เกณฑ์ปกติ)</h2>
+                        <p style="font-size:16px; color:#E2E8F0; margin-bottom:10px;">
+                            โมเดล KNN (K={k_val}) ประเมินดัชนีความปลอดภัยสุขภาพหัวใจอยู่ที่ <b style="color:#34D399; font-size:24px;">{safe_percent:.1f}%</b>
+                        </p>
+                        <p style="font-size:13.5px; color:#CBD5E1; line-height:1.55; margin:0;">
+                            <b>คำแนะนำ:</b> ค่าพารามิเตอร์ของคุณอยู่ในโซนสุขภาพดี แนะนำให้ออกกำลังกายสม่ำเสมอ ควบคุมระดับคอเลสเตอรอลและความดันโลหิตให้คงที่
+                        </p>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
-                if os.path.exists("./img/no.jpg"):
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.image("./img/no.jpg", use_container_width=True)
 
         with top_c2:
-            # หน้าปัด Speedometer Gauge วัดความเสี่ยง
             gauge_fig = go.Figure(go.Indicator(
                 mode="gauge+number",
                 value=risk_percent,
-                number={'suffix': "%", 'font': {'size': 42, 'color': '#FB7185' if prediction == 1 else '#34D399', 'family': 'Orbitron'}},
-                title={'text': "ดัชนีความเสี่ยงโรคหัวใจ (RISK SCORE)", 'font': {'size': 15, 'color': '#E2E8F0', 'family': 'Prompt'}},
+                number={'suffix': "%", 'font': {'size': 40, 'color': '#FB7185' if prediction == 1 else '#34D399', 'family': 'Orbitron'}},
+                title={'text': "ดัชนีความเสี่ยงโรคหัวใจ (RISK SCORE)", 'font': {'size': 14, 'color': '#E2E8F0', 'family': 'Prompt'}},
                 gauge={
                     'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#94A3B8"},
                     'bar': {'color': "#FB7185" if prediction == 1 else "#34D399"},
@@ -466,7 +516,7 @@ with tab1:
                 paper_bgcolor='rgba(0,0,0,0)',
                 font={'color': "#E2E8F0", 'family': "Prompt"},
                 height=290,
-                margin=dict(l=20, r=20, t=50, b=10)
+                margin=dict(l=20, r=20, t=45, b=10)
             )
             st.plotly_chart(gauge_fig, use_container_width=True)
 
@@ -496,7 +546,6 @@ with tab1:
                 mode='markers', name='กลุ่มโรคหัวใจ (1)',
                 marker=dict(size=4, color='#FB7185', opacity=0.45)
             ))
-            # จุดตำแหน่งของผู้ใช้ (ปักหมุดดาวขนาดใหญ่)
             fig_3d.add_trace(go.Scatter3d(
                 x=[age], y=[max_hr], z=[cholesterol],
                 mode='markers+text', name='ตำแหน่งของคุณ (YOU)',
