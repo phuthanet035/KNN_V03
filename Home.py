@@ -107,4 +107,5 @@ with c7:
     resting_ecg = st.selectbox(
         "คลื่นไฟฟ้าหัวใจขณะพัก",
         options=[1, 2, 3],
-        format_func=lambda x: {1: "1-ห้องล่างซ้ายหน
+        format_func=lambda x: {1: "1-ห้องล่างซ้ายหนา", 2: "2-ปกติ", 3: "3-คลื่น ST-T ผิดปกติ"}[x]
+    )
