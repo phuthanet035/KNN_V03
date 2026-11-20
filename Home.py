@@ -3,6 +3,36 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
+# ==========================================
+# เพิ่ม CSS เพื่อปรับขนาดตัวอักษรให้ใหญ่ขึ้น
+# ==========================================
+st.markdown("""
+    <style>
+    /* ปรับขนาดตัวอักษรของข้อความทั่วไปและข้อความในปุ่ม */
+    p, button p {
+        font-size: 20px !important;
+    }
+    
+    /* ปรับขนาด Label (ป้ายกำกับหัวข้อเหนือช่องกรอกข้อมูล เช่น อายุ, เพศ) */
+    div[data-testid="stWidgetLabel"] p {
+        font-size: 22px !important;
+        font-weight: bold !important;
+        color: #2c3e50 !important;
+    }
+    
+    /* ปรับขนาดตัวอักษรที่อยู่ในช่องกรอกข้อมูล และ Dropdown */
+    div[data-baseweb="select"] *, input[type="number"], .stSlider div {
+        font-size: 18px !important;
+    }
+    
+    /* ปรับขนาดหัวข้อ (Header) */
+    h1, h2, h3 {
+        font-size: 38px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+# ==========================================
+
 st.header("โปรเจคการตรวจโรคหัวใจ")
 
 col1, col2 = st.columns(2)
@@ -17,7 +47,7 @@ with col2:
 
 html_7 = """
 <div style="background-color:#EC7063;padding:15px;border-radius:15px 15px 15px 15px;border-style:'solid';border-color:black">
-<center><h5>สถิติข้อมูลการเป็นโรคหัวใจ</h5></center>
+<center><h5 style="font-size: 24px;">สถิติข้อมูลการเป็นโรคหัวใจ</h5></center>
 </div>
 """
 st.markdown(html_7, unsafe_allow_html=True)
@@ -38,7 +68,7 @@ else:
 
 html_8 = """
 <div style="background-color:#6BD5DA;padding:15px;border-radius:15px 15px 15px 15px;border-style:'solid';border-color:black">
-<center><h5>ทำนายข้อมูล</h5></center>
+<center><h5 style="font-size: 24px;">ทำนายข้อมูล</h5></center>
 </div>
 """
 st.markdown(html_8, unsafe_allow_html=True)
