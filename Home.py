@@ -20,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ฟังก์ชันช่วยแปลงรูปภาพเป็น Base64 เพื่อล็อกขนาดและใส่กรอบ CSS สุดเท่
+# ฟังก์ชันช่วยแปลงรูปภาพเป็น Base64 เพื่อล็อกขนาดและใส่กรอบ CSS
 def get_base64_image(image_path):
     if os.path.exists(image_path):
         with open(image_path, "rb") as img_file:
@@ -70,8 +70,6 @@ st.markdown("""
         background: linear-gradient(90deg, rgba(15, 23, 42, 0.85), rgba(30, 27, 75, 0.75), rgba(15, 23, 42, 0.85));
         border: 1px solid rgba(56, 189, 248, 0.4);
         border-radius: 14px;
-        padding: 12px 24px;
-        margin-bottom: 22px;
         box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
     }
     .status-beacon {
@@ -89,18 +87,22 @@ st.markdown("""
         100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
-    /* เวที Holographic 3D Core */
+    /* เวที Holographic 3D Core แบบย่อกระชับแนวนอน (Compact Banner) */
     .omega-stage {
         position: relative;
         background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(9, 13, 28, 0.95) 100%);
         backdrop-filter: blur(28px);
         border: 1px solid rgba(99, 102, 241, 0.5);
-        border-radius: 30px;
-        padding: 42px 30px 32px 30px;
-        text-align: center;
-        margin-bottom: 30px;
+        border-radius: 20px;
+        padding: 16px 28px;
+        margin-bottom: 18px;
         overflow: hidden;
-        box-shadow: 0 0 60px rgba(56, 189, 248, 0.18), inset 0 0 40px rgba(139, 92, 246, 0.12);
+        box-shadow: 0 0 40px rgba(56, 189, 248, 0.15), inset 0 0 25px rgba(139, 92, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        text-align: left;
     }
 
     /* ลำแสงเลเซอร์สแกน 2 ทิศทาง */
@@ -116,23 +118,23 @@ st.markdown("""
         50% { top: 96%; opacity: 1; }
     }
 
-    /* วงแหวนพลังงาน 4 ชั้นหมุนรอบหัวใจ */
+    /* วงแหวนพลังงานขนาดกะทัดรัด (75x75px) */
     .orbital-system {
         position: relative;
-        width: 135px; height: 135px;
-        margin: 0 auto 20px auto;
+        width: 75px; height: 75px;
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
     }
     .orbit-1 {
-        position: absolute; width: 135px; height: 135px;
+        position: absolute; width: 75px; height: 75px;
         border: 2px dashed rgba(34, 211, 238, 0.65);
         border-radius: 50%;
         animation: spinCW 14s linear infinite;
     }
     .orbit-2 {
-        position: absolute; width: 112px; height: 112px;
+        position: absolute; width: 60px; height: 60px;
         border: 2px solid transparent;
         border-top: 2px solid #A855F7;
         border-bottom: 2px solid #22D3EE;
@@ -140,15 +142,15 @@ st.markdown("""
         animation: spinCCW 7s linear infinite;
     }
     .orbit-3 {
-        position: absolute; width: 90px; height: 90px;
+        position: absolute; width: 46px; height: 46px;
         border: 1.5px dotted rgba(244, 114, 182, 0.75);
         border-radius: 50%;
         animation: spinCW 4s linear infinite;
     }
     .bio-heart {
-        font-size: 46px;
+        font-size: 26px;
         animation: cardiacPulse 1.1s ease-in-out infinite;
-        filter: drop-shadow(0 0 18px rgba(244, 63, 94, 0.9));
+        filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.9));
     }
     @keyframes spinCW { 100% { transform: rotate(360deg); } }
     @keyframes spinCCW { 100% { transform: rotate(-360deg); } }
@@ -170,12 +172,13 @@ st.markdown("""
     }
 
     .omega-title {
-        font-size: 2.75rem;
+        font-size: 1.65rem;
         font-weight: 800;
         background: linear-gradient(90deg, #67E8F9 0%, #A5B4FC 45%, #F472B6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin: 6px 0 10px 0;
+        margin: 2px 0 4px 0;
+        line-height: 1.2;
     }
 
     /* กล่องคอนโซลตัดมุมสไตล์ยานอวกาศ */
@@ -342,26 +345,30 @@ with st.sidebar:
 # 5. แถบสถานะ HUD & เวที Holographic 3D Core
 # ==========================================
 st.markdown(f"""
-<div class="omega-hud-bar">
+<div class="omega-hud-bar" style="padding: 8px 20px; margin-bottom: 12px;">
     <div><span class="status-beacon"></span><b style="color:#34D399;">NEURAL CORE ONLINE</b> | อัลกอริทึม: <b>K-Nearest Neighbors (K={k_val})</b></div>
-    <div class="orbitron" style="color:#22D3EE; font-size:12px;">VECTOR SCALING: {"ON" if use_scaler else "OFF"} • 3D SPACE MAPPING READY</div>
+    <div class="orbitron" style="color:#22D3EE; font-size:11px;">VECTOR SCALING: {"ON" if use_scaler else "OFF"} • 3D SPACE MAPPING READY</div>
 </div>
 
 <div class="omega-stage">
     <div class="laser-sweep"></div>
-    <div class="orbital-system">
-        <div class="orbit-1"></div>
-        <div class="orbit-2"></div>
-        <div class="orbit-3"></div>
-        <div class="bio-heart">🫀</div>
+    <div style="display:flex; align-items:center; gap:20px;">
+        <div class="orbital-system">
+            <div class="orbit-1"></div>
+            <div class="orbit-2"></div>
+            <div class="orbit-3"></div>
+            <div class="bio-heart">🫀</div>
+        </div>
+        <div>
+            <div class="orbitron" style="color:#22D3EE; font-size:10px; letter-spacing:2.5px;">OMEGA QUANTUM CARDIAC DIAGNOSTIC CONSOLE</div>
+            <div class="omega-title">ระบบวิเคราะห์และจำลองความเสี่ยงโรคหัวใจ 3 มิติ</div>
+            <p style="color:#94A3B8; font-size:13.5px; margin:0;">
+                จำแนกข้อมูลสุขภาพเชิงลึก 11 มิติด้วย <b>K-Nearest Neighbors (KNN)</b> พร้อมจำลองตำแหน่งในอวกาศ 3 มิติ
+            </p>
+        </div>
     </div>
-    <div class="orbitron" style="color:#22D3EE; font-size:12px; letter-spacing:3.5px;">OMEGA QUANTUM CARDIAC DIAGNOSTIC CONSOLE</div>
-    <div class="omega-title">ระบบวิเคราะห์และจำลองความเสี่ยงโรคหัวใจ 3 มิติ</div>
-    <p style="color:#94A3B8; font-size:16px; max-width:760px; margin:0 auto 16px auto;">
-        จำแนกข้อมูลสุขภาพเชิงลึก 11 มิติด้วย <b>K-Nearest Neighbors (KNN)</b> พร้อมจำลองตำแหน่งของคุณในอวกาศข้อมูล 3 มิติแบบเรียลไทม์
-    </p>
-    <svg width="340" height="45" viewBox="0 0 340 45" style="margin: 0 auto; display: block;">
-        <path class="ecg-wave-path" fill="none" stroke="#22D3EE" stroke-width="2.5"
+    <svg width="200" height="40" viewBox="0 0 340 45" style="flex-shrink:0;">
+        <path class="ecg-wave-path" fill="none" stroke="#22D3EE" stroke-width="3"
               d="M0,25 L70,25 L85,10 L96,38 L110,2 L125,43 L136,25 L190,25 L205,12 L216,36 L228,4 L240,40 L250,25 L340,25" />
     </svg>
 </div>
