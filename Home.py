@@ -1,10 +1,10 @@
 import os
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.datasets import load_iris
 import streamlit as st
 import pandas as pd
 import numpy as np
 
-# หาตำแหน่งโฟลเดอร์ปัจจุบันของไฟล์ Home.py เพื่อให้ดึงรูปภาพและไฟล์ CSV ได้ไม่พลาด
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 def get_file_path(folder, filename):
@@ -12,32 +12,27 @@ def get_file_path(folder, filename):
 
 st.header("โปรเจคการจำแนกข้อมูลดอกไม้")
 
-# แก้ไข: เพิ่ม col3 เข้าไปใน st.columns(3) จากเดิมที่มีแค่ col1, col2
 col1, col2, col3 = st.columns(3)
+
+# ลิงก์รูปภาพสำรองกรณีไม่มีไฟล์ในเครื่อง/GitHub
+url_versicolor = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Iris_versicolor_3.jpg/320px-Iris_versicolor_3.jpg"
+url_virginica = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Iris_virginica.jpg/320px-Iris_virginica.jpg"
+url_setosa = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Kosaciec_szczecinkowaty_Iris_setosa.jpg/320px-Kosaciec_szczecinkowaty_Iris_setosa.jpg"
 
 with col1:
     st.header("Versicolor")
     img1 = get_file_path("img", "iris1.jpg")
-    if os.path.exists(img1):
-        st.image(img1)
-    else:
-        st.warning("ไม่พบไฟล์ img/iris1.jpg")
+    st.image(img1 if os.path.exists(img1) else url_versicolor)
 
 with col2:
     st.header("Virginica")
     img2 = get_file_path("img", "iris2.jpg")
-    if os.path.exists(img2):
-        st.image(img2)
-    else:
-        st.warning("ไม่พบไฟล์ img/iris2.jpg")
+    st.image(img2 if os.path.exists(img2) else url_virginica)
 
 with col3:
     st.header("Setosa")
     img3 = get_file_path("img", "iris3.jpg")
-    if os.path.exists(img3):
-        st.image(img3)
-    else:
-        st.warning("ไม่พบไฟล์ img/iris3.jpg")
+    st.image(img3 if os.path.exists(img3) else url_setosa)
 
 html_7 = """
 <div style="background-color:#EC7063;padding:15px;border-radius:15px 15px 15px 15px;border-style:'solid';border-color:black">
@@ -47,9 +42,16 @@ html_7 = """
 st.markdown(html_7, unsafe_allow_html=True)
 st.markdown("")
 
-# โหลดไฟล์ CSV
+# โหลดไฟล์ CSV (ถ้าหาไฟล์ในโฟลเดอร์ data ไม่เจอ จะดึงข้อมูล Iris มาตรฐานจาก scikit-learn มาใช้แทนอัตโนมัติ)
 csv_path = get_file_path("data", "iris.csv")
-dt = pd.read_csv(csv_path)
+if os.path.exists(csv_path):
+    dt = pd.read_csv(csv_path)
+else:
+    iris = load_iris()
+    dt = pd.DataFrame(iris.data, columns=['sepallength', 'sepalwidth', 'petallength', 'petalwidth'])
+    # แปลงชื่อสายพันธุ์ให้เป็นตัวพิมพ์ใหญ่ตัวแรกตรงกับโค้ดเดิม
+    dt['variety'] = [iris.target_names[i].capitalize() for i in iris.target]
+
 st.write(dt.head(10))
 
 dt1 = dt['petallength'].sum()
@@ -73,7 +75,6 @@ html_8 = """
 st.markdown(html_8, unsafe_allow_html=True)
 st.markdown("")
 
-# ปรับค่า min_value, max_value, step ให้เหมาะสมกับขนาดดอกไม้จริง (หน่วยเป็น cm)
 pt_len = st.slider("กรุณาเลือกข้อมูล petal.length", min_value=0.0, max_value=10.0, value=1.5, step=0.1)
 pt_wd = st.slider("กรุณาเลือกข้อมูล petal.width", min_value=0.0, max_value=10.0, value=0.2, step=0.1)
 
@@ -81,7 +82,6 @@ sp_len = st.number_input("กรุณาเลือกข้อมูล sepal
 sp_wd = st.number_input("กรุณาเลือกข้อมูล sepal.width", min_value=0.0, max_value=10.0, value=3.5, step=0.1)
 
 if st.button("ทำนายผล"):
-    # ระบุลำดับคอลัมน์ให้ตรงกับข้อมูลที่รับเข้ามา (x_input)
     feature_cols = ['petallength', 'petalwidth', 'sepallength', 'sepalwidth']
     X = dt[feature_cols]
     y = dt['variety']
@@ -89,21 +89,19 @@ if st.button("ทำนายผล"):
     Knn_model = KNeighborsClassifier(n_neighbors=3)
     Knn_model.fit(X, y)
 
-    # สร้าง DataFrame ที่มีชื่อคอลัมน์ตรงกัน เพื่อป้องกัน Warning และทำนายได้แม่นยำ
     x_input = pd.DataFrame([[pt_len, pt_wd, sp_len, sp_wd]], columns=feature_cols)
 
     out = Knn_model.predict(x_input)
     st.success(f"ผลการทำนายคือ: **{out[0]}**")
 
-    # แสดงรูปภาพตามสายพันธุ์ที่ทำนายได้ (จัดให้ตรงกับหัวข้อด้านบน)
     if out[0] == 'Versicolor':
         img_out = get_file_path("img", "iris1.jpg")
+        st.image(img_out if os.path.exists(img_out) else url_versicolor)
     elif out[0] == 'Virginica':
         img_out = get_file_path("img", "iris2.jpg")
+        st.image(img_out if os.path.exists(img_out) else url_virginica)
     else: # Setosa
         img_out = get_file_path("img", "iris3.jpg")
-        
-    if os.path.exists(img_out):
-        st.image(img_out)
+        st.image(img_out if os.path.exists(img_out) else url_setosa)
 else:
     st.write("ไม่ทำนาย")
