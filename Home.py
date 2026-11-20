@@ -8,26 +8,31 @@ import numpy as np
 # ==========================================
 st.markdown("""
     <style>
-    /* ปรับขนาดตัวอักษรของข้อความทั่วไปและข้อความในปุ่ม */
-    p, button p {
-        font-size: 20px !important;
-    }
-    
-    /* ปรับขนาด Label (ป้ายกำกับหัวข้อเหนือช่องกรอกข้อมูล เช่น อายุ, เพศ) */
+    /* 1. ปรับขนาด Label (หัวข้อด้านบนกล่อง) */
     div[data-testid="stWidgetLabel"] p {
         font-size: 22px !important;
         font-weight: bold !important;
         color: #2c3e50 !important;
     }
     
-    /* ปรับขนาดตัวอักษรที่อยู่ในช่องกรอกข้อมูล และ Dropdown */
-    div[data-baseweb="select"] *, input[type="number"], .stSlider div {
-        font-size: 18px !important;
+    /* 2. ขยายตัวอักษร "ภายในกล่องตัวเลือก (Dropdown / Selectbox)" */
+    div[data-baseweb="select"] * {
+        font-size: 22px !important;
     }
     
-    /* ปรับขนาดหัวข้อ (Header) */
-    h1, h2, h3 {
-        font-size: 38px !important;
+    /* 3. ขยายตัวอักษร "ภายในกล่องกรอกตัวเลข (Number Input)" */
+    input[type="number"] {
+        font-size: 22px !important;
+    }
+    
+    /* 4. ขยายตัวเลขบน "แถบเลื่อน (Slider)" */
+    div[data-testid="stThumbValue"], div[data-testid="stTickBarMin"], div[data-testid="stTickBarMax"] {
+        font-size: 20px !important;
+    }
+    
+    /* 5. ปรับขนาดตัวอักษรของข้อความทั่วไปและข้อความในปุ่ม */
+    p, button p {
+        font-size: 20px !important;
     }
     </style>
 """, unsafe_allow_html=True)
