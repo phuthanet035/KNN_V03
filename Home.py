@@ -12,81 +12,180 @@ from sklearn.metrics import accuracy_score
 # 1. ตั้งค่าหน้าเว็บ (Page Configuration)
 # ==========================================
 st.set_page_config(
-    page_title="ระบบประเมินความเสี่ยงโรคหัวใจ (KNN)",
-    page_icon="❤️",
+    page_title="CARDIO-AI | ระบบวิเคราะห์โรคหัวใจอัจฉริยะ",
+    page_icon="🫀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ==========================================
-# 2. Custom CSS ตกแต่งความสวยงาม
+# 2. Custom CSS สไตล์ Cyber-Medical Glassmorphism
 # ==========================================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
-    
-    html, body, [class*="css"] {
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap');
+
+    /* พื้นหลังหลักโทน Midnight Navy สบายตา */
+    .stApp {
+        background: radial-gradient(circle at 15% 20%, #162238 0%, #0B1120 50%, #060913 100%);
+        color: #E2E8F0;
         font-family: 'Prompt', sans-serif;
     }
-    .main-header {
-        background: linear-gradient(135deg, #FF4B4B 0%, #B71C1C 100%);
-        padding: 25px;
-        border-radius: 15px;
-        color: white;
+
+    /* ปรับแต่ง Sidebar ให้เป็นกระจกเข้ม */
+    [data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    /* ฟอนต์ตัวเลขและหัวข้อภาษาอังกฤษสไตล์ Sci-Fi */
+    .cyber-font {
+        font-family: 'Orbitron', sans-serif;
+        letter-spacing: 1.5px;
+    }
+
+    /* กล่อง Hero Header พร้อมแสง Glow */
+    .hero-container {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        box-shadow: 0 0 35px rgba(14, 165, 233, 0.15), inset 0 0 20px rgba(56, 189, 248, 0.05);
+        border-radius: 24px;
+        padding: 35px 25px;
         text-align: center;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 15px rgba(255, 75, 75, 0.2);
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
     }
-    .section-header {
-        background-color: #F0F4F8;
-        border-left: 6px solid #1E88E5;
-        padding: 12px 20px;
-        border-radius: 8px;
-        margin: 20px 0 15px 0;
-        color: #102A43;
+
+    .hero-title {
+        font-size: 2.4rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #38BDF8, #818CF8, #F472B6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
     }
-    .result-card-danger {
-        background-color: #FFEBEE;
-        border: 2px solid #EF5350;
-        border-radius: 15px;
+
+    /* แอนิเมชันเส้นคลื่นหัวใจ ECG */
+    .ecg-line {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: dash 3.5s linear infinite;
+    }
+    @keyframes dash {
+        to { stroke-dashoffset: 0; }
+    }
+
+    /* กล่อง Glassmorphism สำหรับแบ่งโซน */
+    .glass-card {
+        background: rgba(30, 41, 59, 0.45);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        border-radius: 20px;
         padding: 25px;
-        text-align: center;
-        color: #B71C1C;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, border-color 0.3s ease;
     }
-    .result-card-safe {
-        background-color: #E8F5E9;
-        border: 2px solid #66BB6A;
-        border-radius: 15px;
-        padding: 25px;
-        text-align: center;
-        color: #1B5E20;
+    .glass-card:hover {
+        border-color: rgba(56, 189, 248, 0.4);
     }
-    div.stButton > button:first-child {
-        background: linear-gradient(90deg, #1E88E5 0%, #1565C0 100%);
-        color: white;
-        font-size: 18px;
+
+    .section-badge {
+        display: inline-block;
+        background: rgba(56, 189, 248, 0.15);
+        color: #38BDF8;
+        border: 1px solid rgba(56, 189, 248, 0.4);
+        padding: 5px 14px;
+        border-radius: 50px;
+        font-size: 0.85rem;
         font-weight: 600;
-        border-radius: 10px;
-        padding: 12px 24px;
-        border: none;
-        width: 100%;
-        transition: 0.3s;
+        margin-bottom: 12px;
     }
-    div.stButton > button:first-child:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(30, 136, 229, 0.3);
+
+    /* การ์ดแสดงผลลัพธ์ - เสี่ยงสูง (Coral Neon สบายตา) */
+    .result-danger {
+        background: linear-gradient(135deg, rgba(127, 29, 29, 0.45) 0%, rgba(30, 41, 59, 0.85) 100%);
+        backdrop-filter: blur(16px);
+        border: 2px solid #FB7185;
+        box-shadow: 0 0 30px rgba(251, 113, 133, 0.25);
+        border-radius: 22px;
+        padding: 30px;
+        text-align: center;
+    }
+
+    /* การ์ดแสดงผลลัพธ์ - ปลอดภัย (Emerald Cyan สบายตา) */
+    .result-safe {
+        background: linear-gradient(135deg, rgba(6, 78, 59, 0.45) 0%, rgba(30, 41, 59, 0.85) 100%);
+        backdrop-filter: blur(16px);
+        border: 2px solid #34D399;
+        box-shadow: 0 0 30px rgba(52, 211, 153, 0.25);
+        border-radius: 22px;
+        padding: 30px;
+        text-align: center;
+    }
+
+    /* ปุ่มกดเรืองแสงสุดเท่ */
+    div.stFormSubmitButton > button {
+        background: linear-gradient(90deg, #0284C7 0%, #4F46E5 50%, #7C3AED 100%);
+        background-size: 200% auto;
+        color: white !important;
+        font-family: 'Prompt', sans-serif;
+        font-size: 19px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        border-radius: 14px !important;
+        padding: 15px 30px !important;
+        width: 100%;
+        box-shadow: 0 0 25px rgba(79, 70, 229, 0.4);
+        transition: 0.4s ease !important;
+    }
+    div.stFormSubmitButton > button:hover {
+        background-position: right center;
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 0 35px rgba(56, 189, 248, 0.65);
+    }
+
+    /* ปรับแต่ง Tab */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 12px;
+        background-color: rgba(15, 23, 42, 0.6);
+        padding: 8px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 10px;
+        color: #94A3B8;
+        font-weight: 500;
+        padding: 10px 24px;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2)) !important;
+        color: #38BDF8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    /* ปรับสี Label ของ Input ให้อ่านง่ายสบายตา */
+    label, .stMarkdown p {
+        color: #CBD5E1 !important;
+    }
+    h1, h2, h3, h4 {
+        color: #F8FAFC !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. ฟังก์ชันโหลดข้อมูลและสร้างโมเดล (Caching)
+# 3. โหลดข้อมูลและสร้างโมเดล KNN
 # ==========================================
 @st.cache_data
 def load_data():
     file_path = "./data/Heart3.csv"
     if not os.path.exists(file_path):
-        st.error(f"❌ ไม่พบไฟล์ข้อมูลที่ `{file_path}` กรุณาตรวจสอบโครงสร้างโฟลเดอร์บน GitHub")
+        st.error(f"❌ ไม่พบไฟล์ข้อมูลที่ `{file_path}` กรุณาตรวจสอบโฟลเดอร์ data/ บน GitHub")
         st.stop()
     return pd.read_csv(file_path)
 
@@ -95,7 +194,6 @@ def train_knn_model(df, k_neighbors, use_scaler):
     X = df.drop('HeartDisease', axis=1)
     y = df['HeartDisease']
     
-    # แบ่งข้อมูลเพื่อวัดความแม่นยำเบื้องต้น (80/20)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     if use_scaler:
@@ -108,53 +206,85 @@ def train_knn_model(df, k_neighbors, use_scaler):
     eval_model.fit(X_train, y_train)
     acc = accuracy_score(y_test, eval_model.predict(X_test))
     
-    # เทรนด้วยข้อมูลทั้งหมดเพื่อใช้ทำนายจริง
     final_model.fit(X, y)
     return final_model, X.columns, acc
 
 dt = load_data()
 
 # ==========================================
-# 4. แถบด้านข้าง (Sidebar) ตั้งค่าโมเดล
+# 4. แถบควบคุมด้านข้าง (Cyber Control Sidebar)
 # ==========================================
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/833/833472.png", width=80)
-    st.title("⚙️ ตั้งค่าโมเดล KNN")
-    st.markdown("ปรับแต่งพารามิเตอร์ของอัลกอริทึม K-Nearest Neighbors")
+    st.markdown("""
+    <div style="text-align:center; padding: 10px 0;">
+        <span style="font-size: 50px;">🫀</span>
+        <h2 class="cyber-font" style="color:#38BDF8; margin:5px 0;">CARDIO-AI</h2>
+        <p style="font-size:12px; color:#94A3B8;">KNN DIAGNOSTIC ENGINE v2.0</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    k_val = st.slider("จำนวนเพื่อนบ้านใกล้เคียง (K)", min_value=1, max_value=15, value=5, step=2)
-    use_scaler = st.checkbox("ปรับสเกลข้อมูล (StandardScaler)", value=True, help="แนะนำให้เปิดไว้ เพราะ KNN คำนวณจากระยะห่างของตัวเลข")
+    st.divider()
+    st.markdown("### 🎛️ ปรับแต่งสมองกล (KNN)")
+    
+    k_val = st.slider(
+        "ค่า K (จำนวนเพื่อนบ้านใกล้เคียง)",
+        min_value=1, max_value=15, value=5, step=2,
+        help="กำหนดจำนวนข้อมูลที่ใกล้เคียงที่สุดเพื่อใช้โหวตผลลัพธ์"
+    )
+    use_scaler = st.toggle(
+        "เปิดใช้ StandardScaler",
+        value=True,
+        help="ปรับสเกลข้อมูลให้เท่าเทียมกันก่อนคำนวณระยะห่าง (แนะนำ)"
+    )
     
     model, feature_cols, model_acc = train_knn_model(dt, k_val, use_scaler)
     
-    st.divider()
-    st.metric(label="ความแม่นยำของโมเดล (Test Accuracy)", value=f"{model_acc*100:.2f}%")
-    st.caption(f"จำนวนข้อมูลทั้งหมด: {len(dt)} รายการ")
+    st.markdown(f"""
+    <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; padding: 15px; margin-top: 15px; text-align: center;">
+        <div style="font-size: 12px; color: #94A3B8;">ความแม่นยำของโมเดล (ACCURACY)</div>
+        <div class="cyber-font" style="font-size: 28px; font-weight: 700; color: #34D399;">{model_acc*100:.2f}%</div>
+        <div style="font-size: 11px; color: #64748B; margin-top:4px;">ฐานข้อมูลผู้ป่วย {len(dt):,} รายการ</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==========================================
-# 5. ส่วนหัวของเว็บ (Header)
+# 5. ส่วนหัวสุดอลังการ (Hero Header + ECG Wave)
 # ==========================================
 st.markdown("""
-<div class="main-header">
-    <h1>❤️ ระบบวิเคราะห์และทำนายความเสี่ยงโรคหัวใจ</h1>
-    <p style="font-size:16px; margin:0; opacity:0.9;">จำแนกข้อมูลทางการแพทย์ด้วยเทคนิค K-Nearest Neighbors (KNN)</p>
+<div class="hero-container">
+    <div class="section-badge cyber-font">AI-POWERED CARDIAC SCREENING</div>
+    <div class="hero-title">ระบบวิเคราะห์และทำนายความเสี่ยงโรคหัวใจ</div>
+    <p style="color:#94A3B8; font-size:16px; max-width:650px; margin:0 auto 15px auto;">
+        ประมวลผลข้อมูลสุขภาพเชิงลึก 11 มิติ ด้วยอัลกอริทึม <b>K-Nearest Neighbors (KNN)</b> เพื่อประเมินความเสี่ยงอย่างแม่นยำและรวดเร็ว
+    </p>
+    <svg width="280" height="45" viewBox="0 0 280 45" style="margin: 0 auto; display: block;">
+        <path class="ecg-line" fill="none" stroke="#38BDF8" stroke-width="2.5"
+              d="M0,25 L60,25 L75,10 L85,38 L98,3 L112,42 L122,25 L160,25 L175,15 L185,33 L195,25 L280,25" />
+    </svg>
 </div>
 """, unsafe_allow_html=True)
 
-# แบ่ง Tab เพื่อความเป็นระเบียบ
-tab1, tab2 = st.tabs(["🩺 แบบฟอร์มทำนายผล", "📊 สถิติและชุดข้อมูล (Dataset)"])
+# ==========================================
+# 6. เมนูแท็บหลัก (Tabs)
+# ==========================================
+tab1, tab2 = st.tabs(["⚡ วิเคราะห์และทำนายผล (Prediction)", "📊 ฐานข้อมูลและสถิติ (Analytics)"])
 
-# ==========================================
-# TAB 1: หน้ากรอกข้อมูลและทำนายผล
-# ==========================================
+# ------------------------------------------
+# TAB 1: หน้าป้อนข้อมูลและทำนายผล
+# ------------------------------------------
 with tab1:
-    st.markdown('<div class="section-header"><h4>📝 กรอกข้อมูลสุขภาพของผู้เข้ารับการตรวจ</h4></div>', unsafe_allow_html=True)
-    
     with st.form("prediction_form"):
         col1, col2 = st.columns(2, gap="large")
         
         with col1:
-            st.subheader("ข้อมูลทั่วไปและอาการ")
+            st.markdown("""
+            <div class="glass-card">
+                <span class="section-badge">STEP 01</span>
+                <h4 style="margin-top:0;">🧬 ข้อมูลพื้นฐานและอาการทางกายภาพ</h4>
+                <p style="font-size:13px; color:#94A3B8;">ระบุข้อมูลส่วนตัวและลักษณะอาการเจ็บหน้าอกที่พบ</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             age = st.slider("1. อายุ (Age - ปี)", min_value=20, max_value=100, value=50)
             
             sex = st.selectbox(
@@ -184,7 +314,14 @@ with tab1:
             cholesterol = st.number_input("6. ระดับคอเลสเตอรอล (Cholesterol - mg/dl)", min_value=0, max_value=700, value=200)
 
         with col2:
-            st.subheader("ผลตรวจทางห้องปฏิบัติการและคลื่นหัวใจ")
+            st.markdown("""
+            <div class="glass-card">
+                <span class="section-badge">STEP 02</span>
+                <h4 style="margin-top:0;">📈 ค่าผลตรวจทางคลินิกและคลื่นหัวใจ</h4>
+                <p style="font-size:13px; color:#94A3B8;">ระบุค่าผลตรวจเลือด อัตราการเต้นหัวใจ และคลื่นไฟฟ้าหัวใจ</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             fasting_bs = st.selectbox(
                 "7. น้ำตาลในเลือดหลังอดอาหาร > 120 mg/dl (FastingBS)",
                 options=[0, 1],
@@ -216,9 +353,11 @@ with tab1:
             )
 
         st.markdown("<br>", unsafe_allow_html=True)
-        submitted = st.form_submit_button("🔍 วิเคราะห์และทำนายผล")
+        submitted = st.form_submit_button("🚀 เริ่มการวิเคราะห์ความเสี่ยงด้วย AI")
 
-    # แสดงผลลัพธ์เมื่อกดปุ่ม
+    # ==========================================
+    # แสดงผลลัพธ์การทำนาย (Result Display)
+    # ==========================================
     if submitted:
         x_input = pd.DataFrame(
             [[age, sex, chest_pain, resting_bp, cholesterol, fasting_bs,
@@ -228,23 +367,39 @@ with tab1:
         
         prediction = model.predict(x_input)[0]
         proba = model.predict_proba(x_input)[0]
+        risk_percent = proba[1] * 100
+        safe_percent = proba[0] * 100
         
-        st.markdown('<div class="section-header"><h4>📋 ผลการวิเคราะห์ความเสี่ยง</h4></div>', unsafe_allow_html=True)
-        
-        res_col1, res_col2 = st.columns([1, 2])
+        st.markdown("<br>", unsafe_allow_html=True)
+        res_col1, res_col2 = st.columns([1, 2.2], gap="large")
         
         if prediction == 1:
             with res_col1:
                 if os.path.exists("./img/yes.jpg"):
                     st.image("./img/yes.jpg", use_container_width=True)
                 else:
-                    st.markdown("<h1 style='text-align:center; font-size:80px;'>⚠️</h1>", unsafe_allow_html=True)
+                    st.markdown("""
+                    <div class="result-danger" style="padding: 40px 20px;">
+                        <div style="font-size: 75px;">🚨</div>
+                        <div class="cyber-font" style="color:#FB7185; font-weight:700; margin-top:10px;">HIGH RISK</div>
+                    </div>
+                    """, unsafe_allow_html=True)
             with res_col2:
                 st.markdown(f"""
-                <div class="result-card-danger">
-                    <h2>⚠️ ผลการทำนาย: มีความเสี่ยงเป็นโรคหัวใจ (Class 1)</h2>
-                    <p style="font-size:18px;">ความน่าจะเป็นที่ประเมินได้จากเพื่อนบ้าน {k_val} ลำดับแรก: <b>{proba[1]*100:.1f}%</b></p>
-                    <p style="font-size:14px; color:#555;">*หมายเหตุ: ผลลัพธ์นี้เป็นการคำนวณทางสถิติเบื้องต้น ควรปรึกษาแพทย์ผู้เชี่ยวชาญเพื่อตรวจวินิจฉัยอย่างละเอียด</p>
+                <div class="result-danger">
+                    <span style="background:rgba(251,113,133,0.2); color:#FB7185; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+                        ผลการจำแนกข้อมูล: CLASS 1
+                    </span>
+                    <h2 style="color:#FDA4AF !important; margin: 12px 0;">⚠️ ตรวจพบความเสี่ยงในการเป็นโรคหัวใจ</h2>
+                    <div style="font-size: 18px; color:#E2E8F0; margin-bottom: 15px;">
+                        ดัชนีความเสี่ยงที่คำนวณได้: <span class="cyber-font" style="font-size:28px; color:#FB7185; font-weight:700;">{risk_percent:.1f}%</span>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.7); border-radius: 10px; height: 14px; width: 100%; overflow: hidden; margin-bottom: 15px;">
+                        <div style="background: linear-gradient(90deg, #F43F5E, #FB7185); width: {risk_percent}%; height: 100%;"></div>
+                    </div>
+                    <p style="font-size: 14px; color: #CBD5E1; margin:0;">
+                        คำแนะนำ: ข้อมูลของคุณมีลักษณะใกล้เคียงกับกลุ่มผู้ป่วยโรคหัวใจในฐานข้อมูล (K={k_val}) ควรเข้าพบแพทย์เฉพาะทางด้านโรคหัวใจเพื่อตรวจคลื่นไฟฟ้าหัวใจและวินิจฉัยอย่างละเอียด
+                    </p>
                 </div>
                 """, unsafe_allow_html=True)
         else:
@@ -252,36 +407,77 @@ with tab1:
                 if os.path.exists("./img/no.jpg"):
                     st.image("./img/no.jpg", use_container_width=True)
                 else:
-                    st.markdown("<h1 style='text-align:center; font-size:80px;'>💚</h1>", unsafe_allow_html=True)
+                    st.markdown("""
+                    <div class="result-safe" style="padding: 40px 20px;">
+                        <div style="font-size: 75px;">🛡️</div>
+                        <div class="cyber-font" style="color:#34D399; font-weight:700; margin-top:10px;">LOW RISK</div>
+                    </div>
+                    """, unsafe_allow_html=True)
             with res_col2:
                 st.markdown(f"""
-                <div class="result-card-safe">
-                    <h2>✅ ผลการทำนาย: ไม่พบความเสี่ยงโรคหัวใจ (Class 0)</h2>
-                    <p style="font-size:18px;">ความน่าจะเป็นที่สุขภาพปกติจากเพื่อนบ้าน {k_val} ลำดับแรก: <b>{proba[0]*100:.1f}%</b></p>
-                    <p style="font-size:14px; color:#555;">*แนะนำให้รักษาสุขภาพ ออกกำลังกายสม่ำเสมอ และตรวจสุขภาพประจำปี</p>
+                <div class="result-safe">
+                    <span style="background:rgba(52,211,153,0.2); color:#34D399; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+                        ผลการจำแนกข้อมูล: CLASS 0
+                    </span>
+                    <h2 style="color:#6EE7B7 !important; margin: 12px 0;">✅ ไม่พบความเสี่ยงโรคหัวใจ (เกณฑ์ปกติ)</h2>
+                    <div style="font-size: 18px; color:#E2E8F0; margin-bottom: 15px;">
+                        ดัชนีความปลอดภัยสุขภาพหัวใจ: <span class="cyber-font" style="font-size:28px; color:#34D399; font-weight:700;">{safe_percent:.1f}%</span>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.7); border-radius: 10px; height: 14px; width: 100%; overflow: hidden; margin-bottom: 15px;">
+                        <div style="background: linear-gradient(90deg, #10B981, #34D399); width: {safe_percent}%; height: 100%;"></div>
+                    </div>
+                    <p style="font-size: 14px; color: #CBD5E1; margin:0;">
+                        คำแนะนำ: ค่าพารามิเตอร์สุขภาพของคุณอยู่ในเกณฑ์ปกติ (ประเมินจาก K={k_val}) แนะนำให้ออกกำลังกายอย่างสม่ำเสมอ ควบคุมอาหาร และตรวจสุขภาพประจำปี
+                    </p>
                 </div>
                 """, unsafe_allow_html=True)
 
-# ==========================================
-# TAB 2: หน้าแสดงสถิติและข้อมูลตัวอย่าง
-# ==========================================
+# ------------------------------------------
+# TAB 2: หน้าสถิติและข้อมูลตัวอย่าง
+# ------------------------------------------
 with tab2:
-    st.markdown('<div class="section-header"><h4>📈 ภาพรวมชุดข้อมูล (Heart3.csv)</h4></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="glass-card">
+        <span class="section-badge cyber-font">DATASET OVERVIEW</span>
+        <h3 style="margin:0;">📊 สถิติชุดข้อมูลที่ใช้ฝึกสอนโมเดล (Heart3.csv)</h3>
+    </div>
+    """, unsafe_allow_html=True)
     
-    m1, m2, m3 = st.columns(3)
     total_cases = len(dt)
     disease_cases = int(dt['HeartDisease'].sum())
     normal_cases = total_cases - disease_cases
     
-    m1.metric("จำนวนผู้ป่วยทั้งหมด", f"{total_cases} คน")
-    m2.metric("กลุ่มเสี่ยง/เป็นโรคหัวใจ (1)", f"{disease_cases} คน", f"{(disease_cases/total_cases)*100:.1f}%", delta_color="inverse")
-    m3.metric("กลุ่มปกติ (0)", f"{normal_cases} คน", f"{(normal_cases/total_cases)*100:.1f}%")
-    
-    st.subheader("สัดส่วนผู้ที่เป็นและไม่เป็นโรคหัวใจ")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown(f"""
+        <div class="glass-card" style="text-align:center;">
+            <div style="color:#94A3B8; font-size:14px;">ข้อมูลทั้งหมดในระบบ</div>
+            <div class="cyber-font" style="font-size:36px; font-weight:700; color:#38BDF8;">{total_cases:,}</div>
+            <div style="color:#64748B; font-size:12px;">รายการ (Records)</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""
+        <div class="glass-card" style="text-align:center;">
+            <div style="color:#94A3B8; font-size:14px;">กลุ่มเสี่ยง / เป็นโรคหัวใจ (1)</div>
+            <div class="cyber-font" style="font-size:36px; font-weight:700; color:#FB7185;">{disease_cases:,}</div>
+            <div style="color:#FB7185; font-size:12px;">คิดเป็น {(disease_cases/total_cases)*100:.1f}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown(f"""
+        <div class="glass-card" style="text-align:center;">
+            <div style="color:#94A3B8; font-size:14px;">กลุ่มปกติ (0)</div>
+            <div class="cyber-font" style="font-size:36px; font-weight:700; color:#34D399;">{normal_cases:,}</div>
+            <div style="color:#34D399; font-size:12px;">คิดเป็น {(normal_cases/total_cases)*100:.1f}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.subheader("📈 กราฟเปรียบเทียบจำนวนผู้ป่วยในชุดข้อมูล")
     heart_counts = dt['HeartDisease'].value_counts().rename(
         index={0: "ไม่เป็นโรคหัวใจ (0)", 1: "เป็นโรคหัวใจ (1)"}
     )
-    st.bar_chart(heart_counts, color="#FF4B4B")
+    st.bar_chart(heart_counts, color="#38BDF8")
     
-    st.subheader("ตัวอย่างข้อมูล 10 แถวแรก")
+    st.subheader("🗂️ ตัวอย่างข้อมูล 10 แถวแรก")
     st.dataframe(dt.head(10), use_container_width=True)
